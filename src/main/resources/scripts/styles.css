@@ -1,0 +1,39 @@
+td:nth-child(2n+3) {
+    border-right: 1px solid black;
+    word-break: break-word
+}
+
+.head {
+    border-bottom: 1px solid black;
+}
+
+.head-person {
+    text-align: center;
+}
+
+.headSeparator {
+    border-right: 1px solid black;
+}
+
+.dataCellInteger {
+    text-align: right;
+    word-break: break-word
+}
+
+.dataCellString {
+    text-align: right;
+    word-break: break-word
+}
+
+.footerDataCellInteger {
+    text-align: right;
+}
+
+.brokenDataDiv {
+    display: flex;
+    flex-direction: row
+}
+
+.foot {
+    border-top: 1px solid black
+}
