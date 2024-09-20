@@ -37,3 +37,7 @@ td:nth-child(2n+3) {
 .foot {
     border-top: 1px solid black
 }
+
+.static {
+    position: static
+}

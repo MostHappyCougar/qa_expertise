@@ -1,7 +1,7 @@
 package DataExporters;
 
 import Logger.stdLogger;
-import Markers.stdMarker;
+import BusFactorProcessor.stdBusFactorProcessor;
 import Structures.SFunctionality;
 import Structures.STestCase;
 import j2html.attributes.Attr;
@@ -33,7 +33,8 @@ public class extDataExporter extends stdDataExporter
     private DomContent neverExecutedCases = null;
     private DomContent casesWithoutOwner = null;
     private DomContent outdatedCases = null;
-    private String tmsAddress, projectId;
+    private final String tmsAddress;
+    private final String projectId;
 
     private final String dataCellIntegerClass = "dataCellInteger";
     private final Attribute footerDataCellIntegerClass = new Attribute(Attr.CLASS, "footerDataCellInteger");
@@ -50,7 +51,7 @@ public class extDataExporter extends stdDataExporter
     {
         super.exportData(functionalityArrayList);
 
-        stdMarker marker = new stdMarker(getRelevantMembers());
+        stdBusFactorProcessor marker = new stdBusFactorProcessor(getRelevantMembers());
         marker.fillRelevantExpertsCountForEachFunctionality(functionalityArrayList);
 
         saveHTMLFile(buildHTMSString(functionalityArrayList));
@@ -59,7 +60,7 @@ public class extDataExporter extends stdDataExporter
     private String buildHTMSString(ArrayList<SFunctionality> functionalityArrayList) throws IOException {
 
         String neverExecutedCasesLogMessageTemplate = "%s: Исполнители %d кейсов не найдены. Вероятно, эти кейсы ниразу не были пройдены";
-        String casesWithoutAutorLogMessageTemplate = "%s: Автор %d кейсов не определен. Вероятно, он не указан в ТестОпс";
+        String casesWithoutAuthorLogMessageTemplate = "%s: Автор %d кейсов не определен. Вероятно, он не указан в ТестОпс";
         String outdatedCasesLogTemplate = "%s: %d неактуальных кейсов будет проигнорировано при анализе погружения";
 
         functionalityArrayList.forEach(functionality ->
@@ -75,9 +76,9 @@ public class extDataExporter extends stdDataExporter
 
             try
             {
-                this.neverExecutedCases = join(this.neverExecutedCases, makeBadCasesStatistics(functionality,  functionality.getClass().getMethod("getNeverExecutedCases"), neverExecutedCasesLogMessageTemplate, "ne", String.format("ne_f_%d", functionality.hashCode()), "neverExecuted"));
-                this.casesWithoutOwner = join(this.casesWithoutOwner, makeBadCasesStatistics(functionality,  functionality.getClass().getMethod("getCasesWithoutAutor"), casesWithoutAutorLogMessageTemplate, "wa", String.format("wa_f_%d", functionality.hashCode()), "withoutOwner"));
-                this.outdatedCases = join(this.outdatedCases, makeBadCasesStatistics(functionality,  functionality.getClass().getMethod("getOutdatedCases"), outdatedCasesLogTemplate, "ou", String.format("ou_f_%d", functionality.hashCode()), "outdatedCases"));
+                this.neverExecutedCases = join(this.neverExecutedCases, makeBadCasesStatistics(functionality, functionality.getClass().getMethod("getNeverExecutedCases"), neverExecutedCasesLogMessageTemplate, "ne", String.format("ne_f_%d", functionality.hashCode()), "neverExecuted"));
+                this.casesWithoutOwner = join(this.casesWithoutOwner, makeBadCasesStatistics(functionality, functionality.getClass().getMethod("getCasesWithoutAutor"), casesWithoutAuthorLogMessageTemplate, "wa", String.format("wa_f_%d", functionality.hashCode()), "withoutOwner"));
+                this.outdatedCases = join(this.outdatedCases, makeBadCasesStatistics(functionality, functionality.getClass().getMethod("getOutdatedCases"), outdatedCasesLogTemplate, "ou", String.format("ou_f_%d", functionality.hashCode()), "outdatedCases"));
             } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e)
             {
                 throw new RuntimeException(e);
@@ -88,10 +89,10 @@ public class extDataExporter extends stdDataExporter
         Attribute charset = new Attribute(Attr.CHARSET, "UTF-8");
         Attribute tableClass = new Attribute(Attr.CLASS, "tree table table-hover table-sm");
 
+        DomContent attentionHeader = text("Для информации");
         DomContent neverExecutedHeader = join(text("Не пройденные кейсы"), p().with(rawHtml("&nbsp")), span(String.valueOf(this.sumOfNeverExecutedCases)).attr("class", "badge bg-secondary"));
         DomContent withoutAuthorHeader = join(text("Кейсы без автора"), p().with(rawHtml("&nbsp")), span(String.valueOf(this.sumOfCasesWithoutAuthor)).attr("class", "badge bg-secondary"));
         DomContent outdatedCasesHeader = join(text("Неактуальные кейсы"), p().with(rawHtml("&nbsp")), span(String.valueOf(this.sumOfOutdatedCases)).attr("class", "badge bg-secondary"));
-        DomContent attentionHeader = text("Для информации");
 
         return html(
                 head(meta().attr(charset),
@@ -138,7 +139,7 @@ public class extDataExporter extends stdDataExporter
 
         Integer currentFunctionalID = this.functionalID;
 
-        String legendRowAttribute = returnColorAttributeBasedOnExpertsCount(functionality.getRelevantExpertsCount(), errorColor, warningColor, neutralColor);
+        String legendRowAttributeCasesCount = returnColorAttributeBasedOnExpertsCount(functionality.getRelevantExpertsCount(), errorColor, warningColor, neutralColor);
         String legendRowAttributeExecuted = returnColorAttributeBasedOnExpertsCount(functionality.getRelevantExpertsCount(), errorColor, warningColor, warningColor);
         String legendRowAttributeCreated = returnColorAttributeBasedOnExpertsCount(functionality.getRelevantExpertsCount(), errorColor, neutralColor, neutralColor);
 
@@ -166,8 +167,8 @@ public class extDataExporter extends stdDataExporter
 
         if (!functionality.getCasesList().isEmpty())
         {
-            functionalityRow = tr(join(functionalityRow, td(text(functionality.getFunctionalName())), td(functionality.getRelevantExpertsCount().toString()).attr("class", String.format("%s %s", this.dataCellIntegerClass, legendRowAttribute)),
-                    join(td(String.valueOf(functionality.getCasesList().size())).attr("class", String.format("%s %s", this.dataCellIntegerClass, legendRowAttribute)),
+            functionalityRow = tr(join(functionalityRow, td(text(functionality.getFunctionalName())), td(functionality.getRelevantExpertsCount().toString()).attr("class", String.format("%s %s", this.dataCellIntegerClass, legendRowAttributeCasesCount)),
+                    join(td(String.valueOf(functionality.getCasesList().size())).attr("class", String.format("%s %s", this.dataCellIntegerClass, legendRowAttributeCasesCount)),
                             fillStatisticsForEachRelevantMember(functionality.getCasesList().size(), functionality.getAllCasesCreatedByMembers(), legendRowAttributeCreated, functionality.getAllCasesExecutionsByMembers(), legendRowAttributeExecuted, false)))).attr(rowAttribute);
             this.functionalID++;
             this.statisticsTable = join(this.statisticsTable, functionalityRow);
@@ -200,7 +201,7 @@ public class extDataExporter extends stdDataExporter
             else
             {
                 float percentage = data.get(name).floatValue() / casesCount.floatValue() * 100;
-                return td(div(a(text(String.format("%s %%", (int) percentage))).attr("href", "#").attr("data-bs-toggle", "tooltip").attr("title", String.format("Кейсов: %s", (data.get(name).toString()))))).attr("class", this.dataCellIntegerClass);
+                return td(div(a(text(String.format("%s %%", (int) percentage))).attr("href", "#").attr("data-bs-toggle", "tooltip").attr("data-bs-placement", "auto").attr("title", String.format("Кейсов: %s", (data.get(name).toString())))).attr("class", "static")).attr("class", this.dataCellIntegerClass);
             }
         else
         {

@@ -1,6 +1,5 @@
 package DataProcessors;
 
-import ConfigReaders.YAMLConfigReader;
 import Logger.stdLogger;
 import ResponseProviders.stdResponseProvider;
 import Structures.SFunctionality;
@@ -22,7 +21,7 @@ public class stdDataProcessor extends ADataProcessor
 {
     private final stdResponseProvider responseProvider;
     private final Integer historyDepth;
-    private HashMap<String, String> tmsData;
+    private final HashMap<String, String> tmsData;
     private final HashSet<SFunctionality> functionalityTreeHashSet = new HashSet<>();
     public ArrayList<SFunctionality> getSortedFunctionalStats()
     {
