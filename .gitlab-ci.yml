@@ -1,0 +1,21 @@
+include:
+  - local: ci/base.yml
+
+variables:
+  CaseHistoryDepth:
+    description: "Количество ранов, которое будет рассмотрено для формирования истории прохождения кейса"
+    value: "2000"
+
+stages:
+  - run
+
+auto:
+  extends: .base
+  except:
+    - pushes
+
+manual:
+  extends: .base
+  only:
+    - pushes
+  when: manual
