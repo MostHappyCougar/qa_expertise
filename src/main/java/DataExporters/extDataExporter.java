@@ -1,6 +1,6 @@
 package DataExporters;
 
-import Logger.stdLogger;
+import Logs.Logs;
 import BusFactorProcessor.stdBusFactorProcessor;
 import Structures.SFunctionality;
 import Structures.STestCase;
@@ -38,12 +38,23 @@ public class extDataExporter extends stdDataExporter
 
     private final String dataCellIntegerClass = "dataCellInteger";
     private final Attribute footerDataCellIntegerClass = new Attribute(Attr.CLASS, "footerDataCellInteger");
+    
+    private final Integer percentageThreshold;
 
     public extDataExporter(HashSet<String> relevantMembers, String tmsAddress, String projectId)
     {
         super(relevantMembers);
         this.tmsAddress = tmsAddress;
         this.projectId = projectId;
+        this.percentageThreshold = 0;
+    }
+    
+    public extDataExporter(HashSet<String> relevantMembers, String tmsAddress, String projectId, Integer percentageThreshold)
+    {
+        super(relevantMembers);
+        this.tmsAddress = tmsAddress;
+        this.projectId = projectId;
+        this.percentageThreshold = percentageThreshold;
     }
 
     @Override
@@ -51,7 +62,7 @@ public class extDataExporter extends stdDataExporter
     {
         super.exportData(functionalityArrayList);
 
-        stdBusFactorProcessor marker = new stdBusFactorProcessor(getRelevantMembers());
+        stdBusFactorProcessor marker = new stdBusFactorProcessor(getRelevantMembers(), this.percentageThreshold);
         marker.fillRelevantExpertsCountForEachFunctionality(functionalityArrayList);
 
         saveHTMLFile(buildHTMSString(functionalityArrayList));
@@ -148,7 +159,7 @@ public class extDataExporter extends stdDataExporter
         {
             rowAttribute = new Attribute(Attr.CLASS, String.format("treegrid-%s", this.functionalID));
 
-            this.allCasesCount = this.allCasesCount + functionality.getCasesList().size();
+            this.allCasesCount = this.allCasesCount + functionality.getActualCasesList().size();
 
             if (this.sumOfExecutedCases != null)
                 functionality.getAllCasesExecutionsByMembers().forEach((user, stats) -> this.sumOfExecutedCases.merge(user, stats, Integer::sum));
@@ -165,11 +176,11 @@ public class extDataExporter extends stdDataExporter
 
         DomContent functionalityRow = null;
 
-        if (!functionality.getCasesList().isEmpty())
+        if (!functionality.getActualCasesList().isEmpty())
         {
             functionalityRow = tr(join(functionalityRow, td(text(functionality.getFunctionalName())), td(functionality.getRelevantExpertsCount().toString()).attr("class", String.format("%s %s", this.dataCellIntegerClass, legendRowAttributeCasesCount)),
-                    join(td(String.valueOf(functionality.getCasesList().size())).attr("class", String.format("%s %s", this.dataCellIntegerClass, legendRowAttributeCasesCount)),
-                            fillStatisticsForEachRelevantMember(functionality.getCasesList().size(), functionality.getAllCasesCreatedByMembers(), legendRowAttributeCreated, functionality.getAllCasesExecutionsByMembers(), legendRowAttributeExecuted, false)))).attr(rowAttribute);
+                    join(td(String.valueOf(functionality.getActualCasesList().size())).attr("class", String.format("%s %s", this.dataCellIntegerClass, legendRowAttributeCasesCount)),
+                            fillStatisticsForEachRelevantMember(functionality.getActualCasesList().size(), functionality.getAllCasesCreatedByMembers(this.percentageThreshold), legendRowAttributeCreated, functionality.getAllCasesExecutionsByMembers(this.percentageThreshold), legendRowAttributeExecuted, false)))).attr(rowAttribute);
             this.functionalID++;
             this.statisticsTable = join(this.statisticsTable, functionalityRow);
         }
@@ -238,7 +249,7 @@ public class extDataExporter extends stdDataExporter
         if (!casesList.isEmpty())
         {
             if (functionality.getParentFunctionality() == null)
-                stdLogger.log.warn(String.format(logMessageTemplate, functionality.getFunctionalName(), casesList.size()));
+                Logs.log.warn(String.format(logMessageTemplate, functionality.getFunctionalName(), casesList.size()));
 
             String parentID = String.format("%s", parent);
             String funcHeader = String.format("%s_head_%s", elementPrefix, functionality.hashCode());

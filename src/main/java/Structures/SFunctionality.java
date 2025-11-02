@@ -2,6 +2,8 @@ package Structures;
 
 import java.util.*;
 
+import javax.management.loading.PrivateClassLoader;
+
 public class SFunctionality
 {
     public SFunctionality(String functionalName)
@@ -48,7 +50,7 @@ public class SFunctionality
     public void addDaughterFunctionality (SFunctionality functionality) { this.daughterFunctionalities.add(functionality); }
 
     //Хэш-сет тесткейсов в функциональности
-    private final HashSet<STestCase> casesList = new HashSet<>();
+    private final HashSet<STestCase> actualCasesList = new HashSet<>();
     //Хэшсет ниразу не пройденных кейсов
     private final HashSet<STestCase> neverExecutedCases = new HashSet<>();
     //Хэшсет неактуальных кейсов
@@ -58,7 +60,7 @@ public class SFunctionality
     {
         if(!Objects.equals(testCase.getCaseStatus(), "Outdated"))
         {
-            this.casesList.add(testCase);
+            this.actualCasesList.add(testCase);
             updateCasesExecutionsByMembers();
             updateCasesCreatedByMembers();
 
@@ -79,7 +81,7 @@ public class SFunctionality
         HashSet<String> executorsUniqueNames = new HashSet<>();
         ArrayList<String> allExecutorsNames = new ArrayList<>();
 
-        this.casesList.forEach((testCase) ->
+        this.actualCasesList.forEach((testCase) ->
         {
             executorsUniqueNames.addAll(testCase.getExecutorsList());
             allExecutorsNames.addAll(testCase.getExecutorsList());
@@ -92,7 +94,7 @@ public class SFunctionality
         HashSet<String> ownersUniqueNames = new HashSet<>();
         ArrayList<String> allOwnersNames = new ArrayList<>();
 
-        this.casesList.forEach((testCase) ->
+        this.actualCasesList.forEach((testCase) ->
         {
             String ownerName = testCase.getOwnerName();
 
@@ -105,9 +107,9 @@ public class SFunctionality
 
         ownersUniqueNames.forEach((ownerName) -> this.allCasesCreatedByMembers.put(ownerName, Collections.frequency(allOwnersNames, ownerName)));
     }
-    public HashSet<STestCase> getCasesList()
+    public HashSet<STestCase> getActualCasesList()
     {
-        return this.casesList;
+        return this.actualCasesList;
     }
     public HashSet<STestCase> getNeverExecutedCases()
     {
@@ -117,12 +119,36 @@ public class SFunctionality
     //Количество кейсов функциональности, пройденных каждым из сотрудников
     private final Map<String, Integer> allCasesExecutionsByMembers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     public Map<String, Integer> getAllCasesExecutionsByMembers() { return this.allCasesExecutionsByMembers; }
+    public Map<String, Integer> getAllCasesExecutionsByMembers(Integer percentageThreshold) 
+    {
+    	/**Получить Map участников проекта с количеством пройденных кейсов, превосходящим указанный в процентах порог**/
+    	Map<String, Integer> allCasesExecutionsByMembersWithThreshold = new TreeMap<>();
+    	
+    	this.allCasesExecutionsByMembers.forEach((m, v) ->
+    	{
+    		if (v.floatValue() / this.actualCasesList.size() * 100 >= percentageThreshold)
+    			allCasesExecutionsByMembersWithThreshold.putIfAbsent(m, v);
+    	});
+    	return allCasesExecutionsByMembersWithThreshold; 
+    }
 
     //Количество кейсов функциональности, созданных каждым из сотрудников
     private final Map<String, Integer> allCasesCreatedByMembers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final HashSet<STestCase> casesWithoutAutor = new HashSet<>();
     public HashSet<STestCase> getCasesWithoutAutor() { return this.casesWithoutAutor; }
     public Map<String, Integer> getAllCasesCreatedByMembers() { return allCasesCreatedByMembers; }
+    public Map<String, Integer> getAllCasesCreatedByMembers(Integer percentageThreshold) 
+    { 
+    	/**Получить Map участников проекта с количеством созданных кейсов, превосходящим указанный в процентах порог**/
+    	Map<String, Integer> allCasesCreatedByMembersWithThreshold = new TreeMap<>();
+    	
+    	this.allCasesCreatedByMembers.forEach((m, v) ->
+    	{
+    		if (v.floatValue() / this.actualCasesList.size() * 100 >= percentageThreshold)
+    			allCasesCreatedByMembersWithThreshold.putIfAbsent(m, v);
+    	});
+    	return allCasesCreatedByMembersWithThreshold; 
+    }
     public HashSet<STestCase> getOutdatedCases() {return this.outdatedCases;}
 
     @Override

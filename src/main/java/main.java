@@ -7,7 +7,7 @@ import ObjectsDeserialization.SDeserializedConfig;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-public class main
+public class Main
 {
     public static void main(String[] args) throws IOException, URISyntaxException, ParseException
     {
@@ -16,7 +16,15 @@ public class main
         SDeserializedConfig deserializedConfig = configReader.getDeserializedConfig();
 
         stdDataProcessor processor = new stdDataProcessor(Integer.valueOf(args[0]), deserializedConfig.getTmsData());
-        extDataExporter exporter = new extDataExporter(deserializedConfig.getRelevantMembers(), deserializedConfig.getTmsData().get("address"), deserializedConfig.getTmsData().get("projectId"));
+        
+        extDataExporter exporter = new extDataExporter
+        		(
+	        		deserializedConfig.getRelevantMembers(), 
+	        		deserializedConfig.getTmsData().get("address"), 
+	        		deserializedConfig.getTmsData().get("projectId"), 
+	        		deserializedConfig.getExpertisePercentageThreshold()
+        		);
+        
         exporter.exportData(processor.getSortedFunctionalStats());
     }
 }
