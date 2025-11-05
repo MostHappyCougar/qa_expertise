@@ -1,16 +1,15 @@
 relevantMembers:
 # Список участников проекта, для которых будет проведен анализ погружения
   - asuzdaltsev
-  - vkomisarova
-  - ekpetrova
-  - ishimkene
-  - mzviagina
-  #- ekhromova
-  #- esmirnova
+  - person1
+  - person2
+  - person3
+  - person4
+  #- person5
   
 expertisePercentageThreshold: 25
 
 tmsData:
   #Данные TMS
-  address: "https://allure-testops.modeus.org/"
+  address: "https://allure-testops.example.org/"
   projectId: 1
