@@ -18,6 +18,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Реализация для экпортера данных о погруженности сотрудников в XLSX документ
+ */
 public class stdDataExporter extends ADataExporter
 {
     private XSSFWorkbook workBook;
@@ -26,6 +29,10 @@ public class stdDataExporter extends ADataExporter
     private final HashSet<String> relevantMembers;
     public HashSet<String> getRelevantMembers() {return this.relevantMembers; }
 
+    /**
+     * Конструктор
+     * @param relevantMembers ХэшСет сотрудников, участвующих в анализе погружения
+     */
     public stdDataExporter(HashSet<String> relevantMembers)
     {
         this.relevantMembers = relevantMembers;
@@ -48,15 +55,15 @@ public class stdDataExporter extends ADataExporter
         makeMembersHeader(this.highLevelStatistics, headerRowHigh, subHeaderRowHigh);
         makeMembersHeader(this.lowLevelStatistics, headerRowLow, subHeaderRowLow);
 
-        stdLogger.log.info(String.format("Заполняем таблицу \"%s\"", this.highLevelStatistics.getSheetName()));
+        stdLogger.log.info("Заполняем таблицу \"{}\"", this.highLevelStatistics.getSheetName());
         HashSet<SFunctionality> publishedHigh = new HashSet<>();
         recursivelyCreateRowsForFunctionalitiesWithStatistics(this.highLevelStatistics, headerRowHigh, functionalArrayList, publishedHigh, null, false);
-        stdLogger.log.info(String.format("Таблица \"%s\" заполнена", this.highLevelStatistics.getSheetName()));
+        stdLogger.log.info("Таблица \"{}\" заполнена", this.highLevelStatistics.getSheetName());
 
-        stdLogger.log.info(String.format("Заполняем таблицу \"%s\"", this.lowLevelStatistics.getSheetName()));
+        stdLogger.log.info("Заполняем таблицу \"{}\"", this.lowLevelStatistics.getSheetName());
         HashSet<SFunctionality> publishedLow = new HashSet<>();
         recursivelyCreateRowsForFunctionalitiesWithStatistics(this.lowLevelStatistics, headerRowLow, functionalArrayList, publishedLow, null, true);
-        stdLogger.log.info(String.format("Таблица \"%s\" заполнена", this.lowLevelStatistics.getSheetName()));
+        stdLogger.log.info("Таблица \"{}\" заполнена", this.lowLevelStatistics.getSheetName());
 
         makeFooterBasedOnHeader(this.highLevelStatistics);
         finalTable(this.lowLevelStatistics);
@@ -68,6 +75,10 @@ public class stdDataExporter extends ADataExporter
         fileOut.close();
     }
 
+    /**
+     * Метод для создания футера таблицы на основе заголовка
+     * @param sheet Таблица
+     */
     private void makeFooterBasedOnHeader(XSSFSheet sheet)
     {
         Row footerRow = makeNextRow(sheet);
@@ -96,6 +107,10 @@ public class stdDataExporter extends ADataExporter
         });
     }
 
+    /**
+     * Форматирование футера
+     * @param sheet
+     */
     private void finalTable(XSSFSheet sheet)
     {
         Row footerRow = makeNextRow(sheet);
@@ -106,6 +121,10 @@ public class stdDataExporter extends ADataExporter
         });
     }
 
+    /**
+     * Создание книги
+     * @throws FileNotFoundException
+     */
     private void createWorkbook() throws FileNotFoundException
     {
         this.workBook = new XSSFWorkbook();
@@ -122,12 +141,20 @@ public class stdDataExporter extends ADataExporter
         }
     }
 
+    /**
+     * Создание таблиц для низкоуровневой и высокоуровневой статистики
+     */
     private void createSheets()
     {
         this.highLevelStatistics = this.workBook.createSheet("Высокоуровневая статистика");
         this.lowLevelStatistics = this.workBook.createSheet("Низкоуровневая статистика");
     }
 
+    /**
+     * Создание заголовка таблицы
+     * @param sheet Лист документа
+     * @return
+     */
     private Row[] makeBaseHeader(XSSFSheet sheet)
     {
         stdLogger.log.info(String.format("Формируем заголовки таблицы \"%s\"", sheet.getSheetName()));
@@ -145,6 +172,14 @@ public class stdDataExporter extends ADataExporter
         return new Row[] {header, subHeader};
     }
 
+    /**
+     * Объединяем ячейки в заголовке
+     * @param sheet Таблица
+     * @param row Строка
+     * @param cellNum Номер ячейки
+     * @param cellValue Значение в ячейке
+     * @param mergedRegion Область для объединения
+     */
     private void makeMergedRegion(XSSFSheet sheet, Row row, Integer cellNum, String cellValue, CellRangeAddress mergedRegion)
     {
         Cell cell = row.createCell(cellNum);
@@ -154,6 +189,12 @@ public class stdDataExporter extends ADataExporter
         XLSXTableStyler.setRegionBorders(mergedRegion, XLSXTableStyler.getStdHeaderStyle(), sheet);
     }
 
+    /**
+     * Заполняем заголовок именами сотрудников, участвующих в анализе
+     * @param sheet Таблица
+     * @param headerRow Строка заголовка таблицы
+     * @param subHeaderRow Строка подзаголовка таблицы
+     */
     private void makeMembersHeader(XSSFSheet sheet, Row headerRow, Row subHeaderRow)
     {
         stdLogger.log.info(String.format("Записываем пользователей в заголовки таблицы \"%s\"", sheet.getSheetName()));
@@ -167,11 +208,22 @@ public class stdDataExporter extends ADataExporter
         stdLogger.log.info(String.format("В заголовки таблицы \"%s\" записаны все релевантные пользователи", sheet.getSheetName()));
     }
 
+    /**
+     * Создаем ячейку в заголовке
+     * @param headerRow Строка заголовка
+     * @return
+     */
     private Cell makeCellInHeader(Row headerRow)
     {
         return headerRow.createCell(headerRow.getLastCellNum());
     }
 
+    /**
+     * Заполнить заголовок
+     * @param sheet Таблица
+     * @param userNameHeaderCell Ячейка, куда будет записано имя сотрудника
+     * @param userName Имя сотрудника
+     */
     private void fillHeaderCell(XSSFSheet sheet, Cell userNameHeaderCell, String userName)
     {
         CellRangeAddress userNameInHeaderRegion = new CellRangeAddress(userNameHeaderCell.getRowIndex(), userNameHeaderCell.getRowIndex(), userNameHeaderCell.getColumnIndex(), userNameHeaderCell.getColumnIndex()+1);
@@ -183,6 +235,11 @@ public class stdDataExporter extends ADataExporter
         userNameHeaderCell.setCellValue(userName);
     }
 
+    /**
+     * Заполнить подзаголовок
+     * @param row Строка, где будет подзаголовок
+     * @param headerUser Ячейка, куда записано имя конкретного сотрудника
+     */
     private void makeSubHeader(Row row, Cell headerUser)
     {
         Cell casesExecutedCell =  row.createCell(headerUser.getColumnIndex());
@@ -194,6 +251,15 @@ public class stdDataExporter extends ADataExporter
         XLSXTableStyler.cellStyler(casesCreatedCell, IndexedColors.LIGHT_BLUE.index, true, HorizontalAlignment.CENTER, XLSXTableStyler.getStdHeaderStyle());
     }
 
+    /**
+     *
+     * @param sheet Таблица
+     * @param header Заголовок
+     * @param functionalArrayList Список функциональностей со статистикой по сотрудникам
+     * @param published Куда записываем функциональность, уже отраженную в статистике
+     * @param parentFunctionalFullID Полный идентификатор родительской функциональности. Если вызывается для всего дерева, начиная с корневого элемента, то установить как null
+     * @param recursively Будет ли отражена статистика рекурсивно или только для корневых элементов
+     */
     private void recursivelyCreateRowsForFunctionalitiesWithStatistics(XSSFSheet sheet, Row header, ArrayList<SFunctionality> functionalArrayList, HashSet<SFunctionality> published, String parentFunctionalFullID, Boolean recursively)
     {
         AtomicReference<Integer> currentFunctionalNumber = new AtomicReference<>(1);
@@ -222,16 +288,33 @@ public class stdDataExporter extends ADataExporter
         });
     }
 
+    /**
+     * Создаем следующую строку
+     * @param sheet Таблица
+     * @return Row
+     */
     private Row makeNextRow(XSSFSheet sheet)
     {
         return sheet.createRow(sheet.getLastRowNum()+1);
     }
 
+    /**
+     * Создать массив ячеек, относящихся к конкретной функциональности
+     * @param functionalityRow Строка, созданная для конкретной функциональности
+     * @return Cell[]
+     */
     private Cell[] makeFunctionalityCells(Row functionalityRow)
     {
         return new Cell[] {functionalityRow.createCell(0), functionalityRow.createCell(1)};
     }
 
+    /**
+     * Заполнить ячейки таблицы данными конкретной функциональности
+     * @param functionalityCells Массив ячеек для функциональности
+     * @param ID Идентификатор функциональности
+     * @param functionality Функциональность
+     * @param casesForFunctionalityCount Количество тесткейсов, созданных для конкретной функциональности
+     */
     private void fillFunctionalityCellByFunctionalityInfo(Cell[] functionalityCells, String ID, SFunctionality functionality, Integer casesForFunctionalityCount)
     {
         functionalityCells[0].setCellValue(String.format("%s - %s", ID, functionality.getFunctionalName()));
@@ -241,6 +324,11 @@ public class stdDataExporter extends ADataExporter
         XLSXTableStyler.cellStyler(functionalityCells[1], IndexedColors.LIGHT_ORANGE.index, false, HorizontalAlignment.RIGHT, XLSXTableStyler.getStdRowNameStyle());
     }
 
+    /**
+     * Создать пустые ячейки
+     * @param headerRow Строка заголовка
+     * @param functionalityRow Строка конкретной функциональности
+     */
     private void makeEmptyCells(Row headerRow, Row functionalityRow)
     {
         headerRow.forEach((member) ->
@@ -256,6 +344,14 @@ public class stdDataExporter extends ADataExporter
         });
     }
 
+    /**
+     * Заполнить тело таблицы статистикой функционала
+     * @param headerRow Строка заголовка
+     * @param functionalityRow Строка конкретной функциональности
+     * @param statisticsMap Статистика конкретной функциональности по сотрудникам
+     * @param columnIndexOffset Смещение ячеек
+     * @param borderStyles Стиль границ таблицы
+     */
     private void fillFunctionalityStatisticsByUsers(Row headerRow, Row functionalityRow, Map<String, Integer> statisticsMap, Integer columnIndexOffset, BorderStyle[] borderStyles)
     {
         statisticsMap.forEach((user, statisticsValue) ->
@@ -268,6 +364,13 @@ public class stdDataExporter extends ADataExporter
                 }));
     }
 
+    /**
+     * Записать в конкретную ячейку данные по конкретному сотруднику в конкретном функционале
+     * @param functionalityRow Строка для функциональности
+     * @param cellUserNumber Номер ячейки для конкретного пользователя
+     * @param content Данные для заполнения ячейки
+     * @param borderStyles стиль границы ячейки
+     */
     private void putCellValue(Row functionalityRow, Integer cellUserNumber, Integer content, BorderStyle[] borderStyles)
     {
         Cell contentCell = functionalityRow.createCell(cellUserNumber);

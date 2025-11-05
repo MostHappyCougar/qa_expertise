@@ -8,25 +8,37 @@ import java.util.HashSet;
 
 import Logger.stdLogger;
 
+/**
+ * Реализация для маркера данных по заданному принципу. В конкретном случае, маркируется функционал, наиболее подверженный bus-factor
+ */
 public class stdBusFactorProcessor extends AMarker
 {
     private final HashSet<String> relevantMembers;
     private Integer percentageThreshold;
 
+    /**
+     *
+     * @param relevantMembers список участвующих в анализе сотрудников
+     * @param percentageThreshold минимальный порог экспертности
+     */
     public stdBusFactorProcessor(HashSet<String> relevantMembers, Integer percentageThreshold)
     {
         this.relevantMembers = relevantMembers;
         this.percentageThreshold = percentageThreshold;
         
-        stdLogger.log.info(String.format("Сотрудники прошедшие и создавшие меньше %d%% тесткейсов не будут учтены как эксперты функционала", this.percentageThreshold));
+        stdLogger.log.info("Сотрудники прошедшие и создавшие меньше {}% тесткейсов не будут учтены как эксперты функционала", this.percentageThreshold);
     }
 
     @Override
-    public void fillRelevantExpertsCountForEachFunctionality(ArrayList<SFunctionality> functionalityTree)
+    public void fillRelevantExpertsCountForEachFunctionality(ArrayList<SFunctionality> functionalList)
     {
-        functionalityTree.forEach(this::makeFunctionalityBusRateForFunctionality);
+        functionalList.forEach(this::makeFunctionalityBusRateForFunctionality);
     }
 
+    /**
+     * Метод для определения количества экспертов для конкретного функционала
+     * @param functionality Конкретная функциональность или директория в TMS
+     */
     private void makeFunctionalityBusRateForFunctionality(SFunctionality functionality)
     {
         this.relevantMembers.forEach(member ->

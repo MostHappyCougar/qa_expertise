@@ -44,7 +44,7 @@ public class stdDataProcessor extends ADataProcessor
     public stdDataProcessor(Integer historyDepth, HashMap<String, String> tmsData) throws IOException, URISyntaxException, ParseException
     {
         this.responseProvider = new stdResponseProvider();
-        stdLogger.log.info(String.format("Последние %d ранов будут рассмотрены для формирования истории прохождения кейсов", historyDepth));
+        stdLogger.log.info("Последние {} ранов будут рассмотрены для формирования истории прохождения кейсов", historyDepth);
         this.historyDepth = historyDepth;
         this.tmsData = tmsData;
         prepareFunctionalityExpertiseAcrossCasesCount(caseCountInProject());
@@ -52,11 +52,11 @@ public class stdDataProcessor extends ADataProcessor
     
     private void prepareFunctionalityExpertiseAcrossCasesCount(Long casesCount) throws IOException, URISyntaxException, ParseException
     {
-        stdLogger.log.info(String.format("Всего будет проанализировано %d кейсов.", casesCount));
+        stdLogger.log.info("Всего будет проанализировано {} кейсов.", casesCount);
 
         String caseList_request = "%sapi/rs/testcase?projectId=%s&page=%s&size=%s&sort=createdDate%%2CDESC";
         int pagesCount = (int) Math.ceil((double) casesCount / 2000);
-        stdLogger.log.info(String.format("Все кейсы разделены на %d страниц.", pagesCount));
+        stdLogger.log.info("Все кейсы разделены на {} страниц.", pagesCount);
 
         AtomicInteger casesCounter = new AtomicInteger();
         for (int i = 0; i < pagesCount; i++)
@@ -77,7 +77,7 @@ public class stdDataProcessor extends ADataProcessor
                         casesCounter.set(casesCounter.get() + 1);
                     }
             );
-            stdLogger.log.info(String.format("%d из %d страница с кейсами проанализирована. Всего рассмотрено %d кейсов.", i+1, pagesCount, casesCounter.get()));
+            stdLogger.log.info("{} из {} страница с кейсами проанализирована. Всего рассмотрено {} кейсов.", i + 1, pagesCount, casesCounter.get());
         }
     }
 
@@ -90,7 +90,7 @@ public class stdDataProcessor extends ADataProcessor
         JSONObject data = (JSONObject) new JSONParser().parse(rawData);
         Long caseCount = (Long)data.get("manualTestCases") + (Long)data.get("automatedTestCases");
 
-        stdLogger.log.info(String.format("В проекте с ID=%s найдено %d кейсов", this.tmsData.get("projectId"), caseCount));
+        stdLogger.log.info("В проекте с ID={} найдено {} кейсов", this.tmsData.get("projectId"), caseCount);
 
         return caseCount;
     }
@@ -121,7 +121,7 @@ public class stdDataProcessor extends ADataProcessor
             }
         }
         else
-            stdLogger.log.warn(String.format("Нельзя определить функциональность кейса #%s. Возможно, она не указана в ТестОпс" , testCase.getCaseId()));
+            stdLogger.log.warn("Нельзя определить функциональность кейса #{}. Возможно, она не указана в TMS", testCase.getCaseId());
     }
 
     private ArrayList<String> requestCaseExecutors(Integer caseId) throws IOException, URISyntaxException
