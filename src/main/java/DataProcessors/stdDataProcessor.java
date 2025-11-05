@@ -17,6 +17,7 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import Logger.stdLogger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -26,8 +27,6 @@ import ResponseProviders.stdResponseProvider;
 import Structures.SFunctionality;
 import Structures.STestCase;
 import abs.ADataProcessor;
-
-import static Logs.Logs.log;
 
 public class stdDataProcessor extends ADataProcessor
 {
@@ -45,7 +44,7 @@ public class stdDataProcessor extends ADataProcessor
     public stdDataProcessor(Integer historyDepth, HashMap<String, String> tmsData) throws IOException, URISyntaxException, ParseException
     {
         this.responseProvider = new stdResponseProvider();
-        log.info(String.format("Последние %d ранов будут рассмотрены для формирования истории прохождения кейсов", historyDepth));
+        stdLogger.log.info(String.format("Последние %d ранов будут рассмотрены для формирования истории прохождения кейсов", historyDepth));
         this.historyDepth = historyDepth;
         this.tmsData = tmsData;
         prepareFunctionalityExpertiseAcrossCasesCount(caseCountInProject());
@@ -53,18 +52,18 @@ public class stdDataProcessor extends ADataProcessor
     
     private void prepareFunctionalityExpertiseAcrossCasesCount(Long casesCount) throws IOException, URISyntaxException, ParseException
     {
-        log.info(String.format("Всего будет проанализировано %d кейсов.", casesCount));
+        stdLogger.log.info(String.format("Всего будет проанализировано %d кейсов.", casesCount));
 
         String caseList_request = "%sapi/rs/testcase?projectId=%s&page=%s&size=%s&sort=createdDate%%2CDESC";
         int pagesCount = (int) Math.ceil((double) casesCount / 2000);
-        log.info(String.format("Все кейсы разделены на %d страниц.", pagesCount));
+        stdLogger.log.info(String.format("Все кейсы разделены на %d страниц.", pagesCount));
 
         AtomicInteger casesCounter = new AtomicInteger();
         for (int i = 0; i < pagesCount; i++)
         {
             String rawData = requestRawData(caseList_request, new String[]{this.tmsData.get("address"), this.tmsData.get("projectId"), String.valueOf(i), casesCount.toString()});
             JSONArray casesDataContent = makeArrayOfJSONObjects(rawData, "content");
-            log.info(String.format("Для %d из %d страницы с тесткейсами выполняется анализ погружения.", i+1, pagesCount));
+            stdLogger.log.info(String.format("Для %d из %d страницы с тесткейсами выполняется анализ погружения.", i+1, pagesCount));
 
             casesDataContent.forEach(caseContent ->
                     {
@@ -78,7 +77,7 @@ public class stdDataProcessor extends ADataProcessor
                         casesCounter.set(casesCounter.get() + 1);
                     }
             );
-            log.info(String.format("%d из %d страница с кейсами проанализирована. Всего рассмотрено %d кейсов.", i+1, pagesCount, casesCounter.get()));
+            stdLogger.log.info(String.format("%d из %d страница с кейсами проанализирована. Всего рассмотрено %d кейсов.", i+1, pagesCount, casesCounter.get()));
         }
     }
 
@@ -91,7 +90,7 @@ public class stdDataProcessor extends ADataProcessor
         JSONObject data = (JSONObject) new JSONParser().parse(rawData);
         Long caseCount = (Long)data.get("manualTestCases") + (Long)data.get("automatedTestCases");
 
-        log.info(String.format("В проекте с ID=%s найдено %d кейсов", this.tmsData.get("projectId"), caseCount));
+        stdLogger.log.info(String.format("В проекте с ID=%s найдено %d кейсов", this.tmsData.get("projectId"), caseCount));
 
         return caseCount;
     }
@@ -122,7 +121,7 @@ public class stdDataProcessor extends ADataProcessor
             }
         }
         else
-            log.warn(String.format("Нельзя определить функциональность кейса #%s. Возможно, она не указана в ТестОпс" , testCase.getCaseId()));
+            stdLogger.log.warn(String.format("Нельзя определить функциональность кейса #%s. Возможно, она не указана в ТестОпс" , testCase.getCaseId()));
     }
 
     private ArrayList<String> requestCaseExecutors(Integer caseId) throws IOException, URISyntaxException

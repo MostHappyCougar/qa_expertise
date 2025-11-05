@@ -6,7 +6,7 @@ import abs.AMarker;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import static Logs.Logs.log;
+import Logger.stdLogger;
 
 public class stdBusFactorProcessor extends AMarker
 {
@@ -18,7 +18,7 @@ public class stdBusFactorProcessor extends AMarker
         this.relevantMembers = relevantMembers;
         this.percentageThreshold = percentageThreshold;
         
-        log.info(String.format("Сотрудники прошедшие и создавшие меньше %d%% тесткейсов не будут учтены как эксперты функционала", this.percentageThreshold));
+        stdLogger.log.info(String.format("Сотрудники прошедшие и создавшие меньше %d%% тесткейсов не будут учтены как эксперты функционала", this.percentageThreshold));
     }
 
     @Override
@@ -38,7 +38,7 @@ public class stdBusFactorProcessor extends AMarker
         });
 
         if (functionality.getParentFunctionality() == null)
-            log.info(String.format("Всего экспертов функционала \"%s\" - %d", functionality.getFunctionalName(), functionality.getRelevantExpertsCount()));
+            stdLogger.log.info(String.format("Всего экспертов функционала \"%s\" - %d", functionality.getFunctionalName(), functionality.getRelevantExpertsCount()));
 
         if (!functionality.getDaughterFunctionalities().isEmpty())
         {

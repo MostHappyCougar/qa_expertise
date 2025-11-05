@@ -1,5 +1,6 @@
 package DataExporters;
 
+import Logger.stdLogger;
 import Structures.SFunctionality;
 import abs.ADataExporter;
 import org.apache.poi.ss.usermodel.*;
@@ -16,8 +17,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static Logs.Logs.log;
 
 public class stdDataExporter extends ADataExporter
 {
@@ -49,15 +48,15 @@ public class stdDataExporter extends ADataExporter
         makeMembersHeader(this.highLevelStatistics, headerRowHigh, subHeaderRowHigh);
         makeMembersHeader(this.lowLevelStatistics, headerRowLow, subHeaderRowLow);
 
-        log.info(String.format("Заполняем таблицу \"%s\"", this.highLevelStatistics.getSheetName()));
+        stdLogger.log.info(String.format("Заполняем таблицу \"%s\"", this.highLevelStatistics.getSheetName()));
         HashSet<SFunctionality> publishedHigh = new HashSet<>();
         recursivelyCreateRowsForFunctionalitiesWithStatistics(this.highLevelStatistics, headerRowHigh, functionalArrayList, publishedHigh, null, false);
-        log.info(String.format("Таблица \"%s\" заполнена", this.highLevelStatistics.getSheetName()));
+        stdLogger.log.info(String.format("Таблица \"%s\" заполнена", this.highLevelStatistics.getSheetName()));
 
-        log.info(String.format("Заполняем таблицу \"%s\"", this.lowLevelStatistics.getSheetName()));
+        stdLogger.log.info(String.format("Заполняем таблицу \"%s\"", this.lowLevelStatistics.getSheetName()));
         HashSet<SFunctionality> publishedLow = new HashSet<>();
         recursivelyCreateRowsForFunctionalitiesWithStatistics(this.lowLevelStatistics, headerRowLow, functionalArrayList, publishedLow, null, true);
-        log.info(String.format("Таблица \"%s\" заполнена", this.lowLevelStatistics.getSheetName()));
+        stdLogger.log.info(String.format("Таблица \"%s\" заполнена", this.lowLevelStatistics.getSheetName()));
 
         makeFooterBasedOnHeader(this.highLevelStatistics);
         finalTable(this.lowLevelStatistics);
@@ -113,12 +112,12 @@ public class stdDataExporter extends ADataExporter
         File directory = new File("files");
         if(directory.mkdir())
         {
-            log.info(String.format("Создана директория \"%s\" для сохранения результатов анализа погружения", directory));
+            stdLogger.log.info(String.format("Создана директория \"%s\" для сохранения результатов анализа погружения", directory));
             this.fileOut = new FileOutputStream("files/QAExpertiseStatistics.xlsx");
         }
         else
         {
-            log.error(String.format("Для сохранения результатов анализа будет использована существующая директория \"%s\"", directory));
+            stdLogger.log.error(String.format("Для сохранения результатов анализа будет использована существующая директория \"%s\"", directory));
             this.fileOut = new FileOutputStream("files/QAExpertiseStatistics.xlsx");
         }
     }
@@ -131,7 +130,7 @@ public class stdDataExporter extends ADataExporter
 
     private Row[] makeBaseHeader(XSSFSheet sheet)
     {
-        log.info(String.format("Формируем заголовки таблицы \"%s\"", sheet.getSheetName()));
+        stdLogger.log.info(String.format("Формируем заголовки таблицы \"%s\"", sheet.getSheetName()));
         Row header = sheet.createRow(0);
         Row subHeader = sheet.createRow(1);
 
@@ -141,7 +140,7 @@ public class stdDataExporter extends ADataExporter
         makeMergedRegion(sheet, header, 0,"Страницы/Функционал", functionalRegion);
         makeMergedRegion(sheet, header, 1,"Всего", totalCasesCountRegion);
 
-        log.info(String.format("Заголовки таблицы \"%s\" сформированы", sheet.getSheetName()));
+        stdLogger.log.info(String.format("Заголовки таблицы \"%s\" сформированы", sheet.getSheetName()));
 
         return new Row[] {header, subHeader};
     }
@@ -157,7 +156,7 @@ public class stdDataExporter extends ADataExporter
 
     private void makeMembersHeader(XSSFSheet sheet, Row headerRow, Row subHeaderRow)
     {
-        log.info(String.format("Записываем пользователей в заголовки таблицы \"%s\"", sheet.getSheetName()));
+        stdLogger.log.info(String.format("Записываем пользователей в заголовки таблицы \"%s\"", sheet.getSheetName()));
         this.relevantMembers.forEach((relevantMember) ->
         {
             Cell userNameHeaderCell = makeCellInHeader(headerRow);
@@ -165,7 +164,7 @@ public class stdDataExporter extends ADataExporter
             fillHeaderCell(sheet, userNameHeaderCell, relevantMember);
             makeSubHeader(subHeaderRow, userNameHeaderCell);
         });
-        log.info(String.format("В заголовки таблицы \"%s\" записаны все релевантные пользователи", sheet.getSheetName()));
+        stdLogger.log.info(String.format("В заголовки таблицы \"%s\" записаны все релевантные пользователи", sheet.getSheetName()));
     }
 
     private Cell makeCellInHeader(Row headerRow)

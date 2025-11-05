@@ -1,7 +1,7 @@
 package DataExporters;
 
-import Logs.Logs;
 import BusFactorProcessor.stdBusFactorProcessor;
+import Logger.stdLogger;
 import Structures.SFunctionality;
 import Structures.STestCase;
 import j2html.attributes.Attr;
@@ -249,7 +249,7 @@ public class extDataExporter extends stdDataExporter
         if (!casesList.isEmpty())
         {
             if (functionality.getParentFunctionality() == null)
-                Logs.log.warn(String.format(logMessageTemplate, functionality.getFunctionalName(), casesList.size()));
+                stdLogger.log.warn(String.format(logMessageTemplate, functionality.getFunctionalName(), casesList.size()));
 
             String parentID = String.format("%s", parent);
             String funcHeader = String.format("%s_head_%s", elementPrefix, functionality.hashCode());
