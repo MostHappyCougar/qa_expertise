@@ -1,5 +1,5 @@
 <h1>Краткое описание утилиты</h1>
-Утилита для анализа погруженности сотрудников в функционал. 
+Утилита для анализа погруженности сотрудников в функционал. В данный момент адаптирована для работы с Allure TestOps
 
 <h2>Отображает следующую информацию:</h2>
 
@@ -65,6 +65,6 @@ expertisePercentageThreshold: 25
 
 tmsData:
   #Данные TMS
-  address: "https://allure-testops.modeus.org/"
+  address: "https://allure-testops.example.org/"
   projectId: 1
 ```
